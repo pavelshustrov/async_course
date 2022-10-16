@@ -13,9 +13,7 @@ const (
 
 	UpdateUser = `update users set role = $1 where public_id = $2`
 
-	UpdateTokenUser = `update users set access_token = $1 where public_id = $2`
-
-	FindUserByToken = `select public_id from users where access_token = $1`
+	UpdateTokenUser = `update users set token = $1 where public_id = $2`
 )
 
 type Repository interface {
@@ -72,15 +70,4 @@ func (r *repo) UpdateToken(ctx context.Context, user *services.User) (*services.
 	}
 
 	return user, tx.Commit(ctx)
-}
-
-func (r *repo) FindByToken(ctx context.Context, token string) (*services.User, error) {
-	user := services.User{}
-
-	err := r.db.QueryRow(ctx, FindUserByToken, token).Scan(&user.PublicID)
-	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
 }

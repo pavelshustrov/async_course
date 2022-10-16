@@ -17,7 +17,7 @@ const (
 
 	FindUserByToken = `select public_id, name, role, email from users where public_id in (select public_id from tokens where access_token = $1)`
 
-	AddNewJob = `insert into jobs(event, payload) values ($1, $2)`
+	AddNewJob = `insert into jobs(event_name, event_version, payload) values ($1, $2, $3)`
 )
 
 type Repository interface {
@@ -67,7 +67,7 @@ func (r *repo) Login(ctx context.Context, credentials *services.Credentials) (*s
 		"token":     token.AccessToken,
 	})
 
-	_, err = tx.Exec(ctx, AddNewJob, "user.auth", authUserEventPayload)
+	_, err = tx.Exec(ctx, AddNewJob, "user.auth", "v1", authUserEventPayload)
 	if err != nil {
 		return nil, err
 	}

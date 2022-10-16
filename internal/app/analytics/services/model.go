@@ -3,7 +3,6 @@ package services
 type Task struct {
 	PublicID    string `json:"public_id"`
 	Title       string `json:"title"`
-	Jira        *string
 	Description string `json:"description"`
 	Status      status
 	Price       Price

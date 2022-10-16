@@ -12,11 +12,10 @@ import (
 const (
 	RandomUser = `select public_id from users where role = 'worker' order by random() limit 1`
 
-	CreateNewTask      = `insert into tasks(public_id, title, description, status, assignee_id) values ($1, $2, $3, $4, $5)`
-	CloseTask          = `update tasks set status = 'CLOSED' where public_id = $1`
-	FindOpenTask       = `select public_id from tasks where status = 'open' for update`
-	UpdateTask         = `update tasks set assignee_id = $1 where public_id = $2`
-	FindTaskByPublicID = `select public_id, title, description, status, assignee_id from tasks where public_id = $1`
+	CreateNewTask = `insert into tasks(public_id, title, description, status, assignee_id) values ($1, $2, $3, $4, $5)`
+	CloseTask     = `update tasks set status = 'CLOSED' where public_id = $1`
+	FindOpenTask  = `select public_id from tasks where status = 'open' for update`
+	UpdateTask    = `update tasks set assignee_id = $1 where public_id = $2`
 
 	AddNewJob = `insert into jobs(event_name, event_version, payload) values ($1, $2, $3)`
 )
@@ -37,21 +36,6 @@ func New(db Repository) *repo {
 	return &repo{
 		db: db,
 	}
-}
-func (r *repo) FindByPublicID(ctx context.Context, task *services.Task) (*services.Task, error) {
-	err := r.db.QueryRow(ctx, FindTaskByPublicID, task.PublicID).
-		Scan(
-			&task.PublicID,
-			&task.Title,
-			&task.Description,
-			&task.Status,
-			&task.AssigneeID,
-		)
-	if err != nil {
-		return nil, err
-	}
-
-	return task, nil
 }
 
 func (r *repo) Create(ctx context.Context, task *services.Task) (*services.Task, error) {
@@ -74,24 +58,14 @@ func (r *repo) Create(ctx context.Context, task *services.Task) (*services.Task,
 
 	// send message
 
-	createdNewTaskEventMap := map[string]interface{}{
+	createdNewTaskEventPayload, _ := json.Marshal(map[string]interface{}{
 		"public_id":   task.PublicID,
 		"assignee_id": task.AssigneeID,
 		"price_fee":   task.Price.Fee,
 		"price_award": task.Price.Award,
-		"status":      task.Status,
-		"title":       task.Title,
-		"description": task.Description,
-	}
+	})
 
-	version := "v2"
-	if task.Jira != nil {
-		version = "v3"
-		createdNewTaskEventMap["jira"] = *task.Jira
-	}
-
-	createdNewTaskEventPayload, _ := json.Marshal(createdNewTaskEventMap)
-	_, err = tx.Exec(ctx, AddNewJob, "task.created", version, createdNewTaskEventPayload)
+	_, err = tx.Exec(ctx, AddNewJob, "task.created", "v1", createdNewTaskEventPayload)
 	if err != nil {
 		return nil, err
 	}
@@ -119,12 +93,7 @@ func (r *repo) Close(ctx context.Context, task *services.Task) error {
 		"assignee_id": task.AssigneeID,
 	})
 
-	_, err = tx.Exec(ctx, AddNewJob, "task.closed", "v2", createdNewTaskEventPayload)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec(ctx, AddNewJob, "be.task.completed", "v1", createdNewTaskEventPayload)
+	_, err = tx.Exec(ctx, AddNewJob, "task.closed", "v1", createdNewTaskEventPayload)
 	if err != nil {
 		return err
 	}

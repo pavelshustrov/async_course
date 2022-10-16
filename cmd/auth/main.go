@@ -2,11 +2,10 @@ package main
 
 import (
 	"context"
-	"education.org/popug-tasks/internal/app/auth/queue_manager"
-	"education.org/popug-tasks/internal/app/transport/kafka/producer"
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	authHandler "education.org/popug-tasks/internal/app/auth/handlers/auth"
@@ -16,6 +15,9 @@ import (
 	authService "education.org/popug-tasks/internal/app/auth/services/auth"
 	usersService "education.org/popug-tasks/internal/app/auth/services/users"
 	"education.org/popug-tasks/internal/app/database"
+	"education.org/popug-tasks/internal/app/transport/kafka/producer"
+	"education.org/popug-tasks/package/event_schema_registry/spec"
+	queue_manager_producer "education.org/popug-tasks/package/queue_manager/producer"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
@@ -32,15 +34,26 @@ func main() {
 
 	//dbConn := database.ConnectByName(AppPrefix)
 
+	validator := spec.NewValidator()
 	kafkaProducer := producer.MustNewProducer()
-	manager := queue_manager.New(kafkaProducer, database.ConnectByName(AppPrefix))
+	manager := queue_manager_producer.New(kafkaProducer, database.ConnectByName(AppPrefix), validator)
 
 	cancelCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	go func() {
 		for {
-			err := manager.Produce(cancelCtx, "auth")
+			err := manager.Produce(
+				cancelCtx,
+				func(event string) string {
+					if strings.HasPrefix(event, "be.") {
+						return "be.auth"
+					}
+					return "usermanagmnet-streaming"
+				},
+				"auth",
+				"auth",
+			)
 			if err != nil {
 				fmt.Println("error kafka producer: ", err.Error())
 			}
