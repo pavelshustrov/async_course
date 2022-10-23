@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"education.org/popug-tasks/internal/app/tasks/services"
+	"education.org/popug-tasks/internal/app/analytics/services"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
