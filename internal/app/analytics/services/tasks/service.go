@@ -2,7 +2,7 @@ package tasks
 
 import (
 	"context"
-	"education.org/popug-tasks/internal/app/tasks/services"
+	"education.org/popug-tasks/internal/app/analytics/services"
 	"fmt"
 	"github.com/google/uuid"
 	"math/rand"

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"education.org/popug-tasks/internal/app/tasks/repositiories/users"
-	"education.org/popug-tasks/internal/app/tasks/services"
+	"education.org/popug-tasks/internal/app/analytics/repositiories/users"
+	"education.org/popug-tasks/internal/app/analytics/services"
 	"github.com/jackc/pgx/v5"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )

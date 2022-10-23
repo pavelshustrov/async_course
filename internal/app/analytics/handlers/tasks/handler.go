@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"education.org/popug-tasks/internal/app/tasks/services"
+	"education.org/popug-tasks/internal/app/analytics/services"
 )
 
 type tasksService interface {
