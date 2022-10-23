@@ -10,6 +10,7 @@ import (
 func MustNewProducer() *kafka.Producer {
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
 		"bootstrap.servers": os.Getenv("bootstrap.servers"),
+		"go.batch.producer": true,
 	})
 	if err != nil {
 		panic(fmt.Errorf("kafka producer creation err: %w", err))

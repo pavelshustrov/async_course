@@ -1,9 +1,11 @@
-drop table if exists users;
-create table if not exists users
+drop table if exists tasks;
+create table if not exists tasks
 (
-    id        serial primary key,
-    public_id varchar(100) not null unique,
-    email     varchar(256) not null unique,
-    name      varchar(100) not null,
-    role      varchar(100) not null
+    id          serial primary key,
+    public_id   varchar(100) not null unique,
+    title       varchar(256) not null,
+    jira        varchar(256),
+    description text         not null,
+    assignee_id varchar(100) not null,
+    status      varchar(100) not null
 );

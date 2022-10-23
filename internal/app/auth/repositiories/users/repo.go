@@ -16,7 +16,7 @@ const (
 
 	// todo extract jobs to separate repository
 
-	AddNewJob = `insert into jobs(event, payload) values ($1, $2)`
+	AddNewJob = `insert into jobs(event_name, event_version, payload) values ($1, $2, $3)`
 )
 
 type Repository interface {
@@ -55,7 +55,7 @@ func (r *repo) Create(ctx context.Context, user *service.User) (*service.User, e
 		"role":      user.Role,
 	})
 
-	_, err = tx.Exec(ctx, AddNewJob, "user.created", createdUserEventPayload)
+	_, err = tx.Exec(ctx, AddNewJob, "user.created", "v2", createdUserEventPayload)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func (r *repo) Update(ctx context.Context, user *service.User) (*service.User, e
 		"Name":      user.Name,
 	})
 
-	_, err = tx.Exec(ctx, AddNewJob, "user.updated", createdUserEventPayload)
+	_, err = tx.Exec(ctx, AddNewJob, "user.updated", "v2", createdUserEventPayload)
 	if err != nil {
 		return nil, err
 	}

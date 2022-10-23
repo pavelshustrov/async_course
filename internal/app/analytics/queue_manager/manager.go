@@ -107,8 +107,12 @@ func (c *manager) Consume(ctx context.Context, topic string) error {
 					return err
 				}
 			}
+			headers := make(map[string]string)
+			for _, v := range message.Headers {
+				headers[v.Key] = string(v.Value)
+			}
 
-			event := string(message.Key)
+			event := headers["event_name"]
 			payload := string(message.Value)
 
 			f, ok := c.eventHandlers[event]

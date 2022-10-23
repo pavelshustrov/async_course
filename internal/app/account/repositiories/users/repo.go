@@ -3,15 +3,15 @@ package users
 import (
 	"context"
 
-	"education.org/popug-tasks/internal/app/tasks/services"
+	"education.org/popug-tasks/internal/app/account/services"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
 const (
-	CreateNewUser = `insert into users(public_id, role) values ($1, $2)`
+	CreateNewUser = `insert into users(public_id, role, email) values ($1, $2, $3)`
 
-	UpdateUser = `update users set role = $1 where public_id = $2`
+	UpdateUser = `update users set role = $1, email = $2 where public_id = $3`
 
 	UpdateTokenUser = `update users set access_token = $1 where public_id = $2`
 
@@ -37,7 +37,7 @@ func New(db Repository) *repo {
 }
 
 func (r *repo) Create(ctx context.Context, user *services.User) (*services.User, error) {
-	_, err := r.db.Exec(ctx, CreateNewUser, user.PublicID, user.Role)
+	_, err := r.db.Exec(ctx, CreateNewUser, user.PublicID, user.Role, user.Email)
 
 	return user, err
 }
@@ -50,7 +50,7 @@ func (r *repo) Update(ctx context.Context, user *services.User) (*services.User,
 
 	defer func() { _ = tx.Rollback(ctx) }()
 
-	_, err = tx.Exec(ctx, UpdateUser, user.Role, user.PublicID)
+	_, err = tx.Exec(ctx, UpdateUser, user.Role, user.Email, user.PublicID)
 	if err != nil {
 		return nil, err
 	}
